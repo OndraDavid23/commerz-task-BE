@@ -50,7 +50,7 @@ public class ParticipantController {
     }
 
     @GetMapping("/getPaginated")
-    public ResponseEntity<ApiResponse> getPaginatedParticipants(@RequestParam(defaultValue="0") int pageNumber, @RequestParam(defaultValue="5") int pageSize) {
+    public ResponseEntity<ApiResponse> getPaginatedParticipants(@RequestParam(defaultValue="0") int pageNumber, @RequestParam(defaultValue="10") int pageSize) {
         try {
             Page<Participant> paginatedParticipants = participantService.getPaginatedParticipants(pageNumber, pageSize);
             return ResponseEntity.ok().body(new ApiResponse("Participants found", paginatedParticipants));
