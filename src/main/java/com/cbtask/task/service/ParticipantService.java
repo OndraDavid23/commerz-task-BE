@@ -42,4 +42,10 @@ public class ParticipantService implements IParticipantService {
         participant.setAge(request.getAge());
         return participantRepository.save(participant);
     }
+
+    @Override
+    public List<Participant> createTestParticipants(List<CreateParticipantRequest> request) {
+        List<Participant> participants = request.stream().map(this::addParticipant).toList();
+        return  participants;
+    }
 }

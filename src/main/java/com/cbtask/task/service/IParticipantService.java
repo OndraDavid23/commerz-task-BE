@@ -12,5 +12,7 @@ public interface IParticipantService {
     List<Participant> getAllParticipants();
     Participant addParticipant(CreateParticipantRequest request);
     Page<Participant> getPaginatedParticipants(int pageNumber, int pageSize);
+    List<Participant> createTestParticipants(List<CreateParticipantRequest> request);
+
 
 }

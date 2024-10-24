@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import org.springframework.http.ResponseEntity;
@@ -73,25 +74,31 @@ public class ParticipantController {
     public ResponseEntity<ApiResponse> createParticipant(@Valid @RequestBody CreateParticipantRequest request) {
         try {
             Participant participant = participantService.addParticipant(request);
-            return ResponseEntity.ok().body(new ApiResponse("Participants created", participant));
+            return ResponseEntity.status(CREATED).body(new ApiResponse("Participants created", participant));
         } catch (Exception e) {
-            return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("Error", e.getMessage()));
+            return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/createTestData")
+    public ResponseEntity<ApiResponse> createTestParticipants(@RequestBody List<@Valid CreateParticipantRequest> request) {
+        try {
+            List<Participant> participants = participantService.createTestParticipants(request);
+            return ResponseEntity.status(CREATED).body(new ApiResponse("Participants created", participants));
+        } catch (Exception e) {
+            return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse(e.getMessage(), null));
         }
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleValidationException(MethodArgumentNotValidException e){
+    public ResponseEntity<ApiResponse> handleValidationException(MethodArgumentNotValidException e){
         Map<String, String> errors = new HashMap<>();
-
         e.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-
-        return errors;
+        return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("Error creating new participant.",errors));
     }
-
-
 }
