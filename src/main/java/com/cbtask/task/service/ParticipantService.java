@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.cbtask.task.dto.ParticipantDTO;
 import com.cbtask.task.exception.ResourceNotFoundException;
 import com.cbtask.task.model.Participant;
 import com.cbtask.task.repository.ParticipantRepository;
@@ -20,32 +21,47 @@ public class ParticipantService implements IParticipantService {
     private final ParticipantRepository participantRepository;
 
     @Override
-    public Participant getParticipantById(Long id) {
-        return participantRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Participant not found"));
+    public ParticipantDTO getParticipantById(Long id) {
+        return createDTO(participantRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Participant not found")));
     }
 
     @Override
-    public List<Participant> getAllParticipants() {
-        return participantRepository.findAll();
+    public List<ParticipantDTO> getAllParticipants() {
+        List<Participant> participants = participantRepository.findAll();
+        return participants.stream().map(this::createDTO).toList();
     }
 
     @Override
-    public Page<Participant> getPaginatedParticipants(int pageNumber, int pageSize) {
-        return participantRepository.findAll(PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id")));
+    public Page<ParticipantDTO> getPaginatedParticipants(int pageNumber, int pageSize) {
+        Page<Participant> participants = participantRepository.findAll(PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id")));
+        return participants.map(this::createDTO);
     }
 
     @Override
-    public Participant addParticipant(CreateParticipantRequest request) {
+    public ParticipantDTO addParticipant(CreateParticipantRequest request) {
         Participant participant = new Participant(); 
         participant.setFirstName(request.getFirstName());
         participant.setLastName(request.getLastName());
         participant.setAge(request.getAge());
-        return participantRepository.save(participant);
+        participant = participantRepository.save(participant);
+
+        return createDTO(participant);
     }
 
     @Override
-    public List<Participant> createTestParticipants(List<CreateParticipantRequest> request) {
-        List<Participant> participants = request.stream().map(this::addParticipant).toList();
-        return  participants;
+    public List<ParticipantDTO> createTestParticipants(List<CreateParticipantRequest> request) {
+        return request.stream().map(this::addParticipant).toList();
+
     }
+
+    private ParticipantDTO createDTO(Participant participant){
+        ParticipantDTO participantDTO = new ParticipantDTO(
+            participant.getId(),
+            participant.getFirstName(),
+            participant.getLastName(),
+            participant.getAge());
+
+        return  participantDTO;
+    } 
 }
+ 
